@@ -13,20 +13,23 @@
 using namespace std;
 
 // void validateUserResponse(int);
-void credits(char &, string &);
+void credits(char &, string &, bool &);
 void clearScreen();
 void retrieveStats(string &);
-void menu (string);
+void menu (string, bool &);
 
 int main() {
   char userResponse;
   string userName;
-  credits(userResponse, userName);
-  menu(userName);
+  bool quizEnd = false;
+  credits(userResponse, userName, quizEnd);
+  while(!quizEnd) {
+    menu(userName, quizEnd);
+  }
   return 0;
 }
 
-void credits(char &userResponse, string &userName) {
+void credits(char &userResponse, string &userName, bool &quizEnd) {
   // Creating the menu box
   cout << string(24, '*') << endl;
   cout << string(24, '*') << endl;
@@ -46,6 +49,8 @@ void credits(char &userResponse, string &userName) {
   if (toupper(userResponse) == 'Y') { // Convert user response to upper case.
     clearScreen();
     retrieveStats(userName);
+  } else {
+    quizEnd = true;
   }
 }
 
@@ -91,9 +96,9 @@ void retrieveStats(string &userName) {
   }
 }
 
-void menu (string userName) {
+void menu (string userName, bool &quizEnd) {
   char userInput;
-  bool quizEnd = false;
+  bool closeMenu = false;
 
   do {
     cout << string(4, '*') << " CHOOSE A PROBLEM " << string(3, '*') << endl;
@@ -138,7 +143,7 @@ void menu (string userName) {
         clearScreen();
         break;
       case 'N':
-        quizEnd = true;
+        closeMenu = true;
         clearScreen();
         break;
       default:
@@ -146,6 +151,6 @@ void menu (string userName) {
         cin.clear();
         break;
     }
-  } while(!quizEnd);
-
+  } while(!closeMenu);
+  quizEnd = true;
 }
