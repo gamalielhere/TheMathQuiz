@@ -111,7 +111,7 @@ void menu (string userName) {
     cout << string(25, '*') << endl;
     cin >> userInput;
 
-    switch (toupper(userInput)) {
+    switch (toupper(userInput)) { // Use switch to check the input for know cases
       case '1':
         cout << userInput << endl; // Generate the problems here instead.
         cin.clear();
