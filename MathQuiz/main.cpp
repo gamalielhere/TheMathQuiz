@@ -22,6 +22,7 @@ int main() {
   char userResponse;
   string userName;
   credits(userResponse, userName);
+  menu(userName);
   return 0;
 }
 
@@ -56,7 +57,6 @@ void retrieveStats(string &userName) {
   bool validName = false;
   int stringErrorCounter = 0;
   string userFileName;
-  ofstream newUserFile;
 
   cin.ignore();
   cout << "Enter your name and press <ENTER> \n";
@@ -77,17 +77,21 @@ void retrieveStats(string &userName) {
       validName = true;
     }
   }
-  userFileName = userName + ".txt";
-  ifstream userFile(userFileName);
-
-  if (userFile) {
-    menu(userFileName);
-  } else {
-    newUserFile.open(userFileName);
-    menu(userFileName);
-  }
 }
 
-void menu (string fileName) {
-  cout << fileName << endl;
+void menu (string userName) {
+  string textLine, userFileName;
+  userFileName = userName + ".txt";
+  ifstream userFile(userFileName);
+  ofstream newUserFile;
+
+  if (!userFile) {
+    newUserFile.open(userFileName);
+    newUserFile << userName;
+    newUserFile.close();
+  } else {
+    while (getline(userFile, textLine)) { // loop through file by string
+      cout << textLine << endl;
+    }
+  }
 }
