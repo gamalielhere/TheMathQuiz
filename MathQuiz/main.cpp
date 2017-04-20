@@ -8,11 +8,15 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <cctype>
 using namespace std;
 
 void validateUserResponse(bool);
 void credits(char &, string &);
 void clearScreen();
+void retrieveStats(string &);
+void menu (string);
 
 int main() {
   char userResponse;
@@ -23,7 +27,6 @@ int main() {
 
 void credits(char &userResponse, string &userName) {
   // Creating the menu box
-  string userChoice;
   cout << string(24, '*') << endl;
   cout << string(24, '*') << endl;
   cout << string(6, '*') << string(12, ' ') << string(6, '*') << endl;
@@ -39,7 +42,7 @@ void credits(char &userResponse, string &userName) {
   cin >> userResponse;
   if (toupper(userResponse) == 'Y') { // Convert user response to upper case.
     clearScreen();
-    cout << "Enter your name and press <ENTER> \n";
+    retrieveStats(userName);
   }
 }
 
@@ -47,4 +50,44 @@ void clearScreen () {
   for (int i = 0; i < 10; i++) {
     cout << "\n\n\n\n\n\n\n\n\n\n";
   }
+}
+
+void retrieveStats(string &userName) {
+  bool validName = false;
+  int stringErrorCounter = 0;
+  string userFileName;
+  ofstream newUserFile;
+
+  cin.ignore();
+  cout << "Enter your name and press <ENTER> \n";
+  while(!validName) {
+    getline(cin, userName);
+    for (int i = 0; i < userName.length(); i++) { // Loop through name
+      if(!isalpha(userName[i]) || isblank(userName[i])) {
+        stringErrorCounter++; // update the counter
+        cout << stringErrorCounter << endl;
+      }
+    }
+
+    if (stringErrorCounter > 0 || cin.fail()) { // if the counter has value other than zero or cin input stream breaks.
+      cout << "Invalid entry. Try again! \n";
+      cin.clear(); // Clear the input
+      stringErrorCounter = 0; // Reset the counter
+    } else {
+      validName = true;
+    }
+  }
+  userFileName = userName + ".txt";
+  ifstream userFile(userFileName);
+
+  if (userFile) {
+    menu(userFileName);
+  } else {
+    newUserFile.open(userFileName);
+    menu(userFileName);
+  }
+}
+
+void menu (string fileName) {
+  cout << fileName << endl;
 }
