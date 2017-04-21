@@ -21,6 +21,7 @@ void retrieveStats(string &, double &, int &, int &);
 void menu (string, double &, int &, int &, bool &);
 bool validateUserResponse(char, string, double &, int &, int &);
 bool generateAddition(string, double &, int &, int &);
+bool generateSubtraction(string, double &, int &, int &);
 bool validateUserAnswer(string, int, int, double &, int &, int &);
 void updateStats(double, int, int, double &, int &, int &);
 void saveStats (string, double, int, int);
@@ -104,11 +105,8 @@ void retrieveStats(string &userName, double &totalCredit, int &totalCorrect, int
   // userFile.open(userFileName);
   int i = 1;
   if (userFile.is_open()) {
-    // while (userFile >> readFile) {
-    //   cout << readFile << endl;
-    //   userFile.ignore(numeric_limits<streamsize>::max(), '\n');
-    // }
-    // fileWordCounter = 0;
+    // Loop through file
+    // Assign lines to correct variables
     while (getline(userFile, readFile)) {
       if (i == 1) {
         userName = readFile;
@@ -161,9 +159,9 @@ bool validateUserResponse(char response, string userName, double &totalCredit, i
     clearScreen();
     return generateAddition(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (response == '2') {
-    cout << response << endl; // Generate the problems here instead.
     cin.clear();
     clearScreen();
+    return generateSubtraction(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (response == '3') {
     cout << response << endl; // Generate the problems here instead.
     cin.clear();
@@ -215,15 +213,51 @@ bool generateAddition(string userName, double &totalCredit, int &totalCorrect, i
   return false;
 }
 
+bool generateSubtraction(string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  int num1, num2, minuend, subtrahend;
+  string fileName;
+  bool userAnswerInt = false;
+  fileName = userName + ".txt";
+
+  minuend = rand() % 9 + 1;
+  subtrahend = rand() % 9 + 1;
+  if (minuend > subtrahend || minuend == subtrahend) {
+    num1 = minuend;
+    num2 = subtrahend;
+  } else {
+    num2 = minuend;
+    num1 = subtrahend;
+  }
+
+  cout << string(6, '*') << " SUBTRACTION " << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << "   " << num1 << " - " << num2 << " = ? " << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+
+  while (!userAnswerInt) {
+    userAnswerInt = validateUserAnswer("Subtraction", num1, num2, totalCredit, totalCorrect, totalIncorrect);
+  }
+
+  return false;
+}
+
 bool validateUserAnswer(string operation, int num1, int num2, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
   string userInput;
   int stringErrorCounter = 0;
   bool userInputValid = false;
 
-  while (!userInputValid) {
-    cin.ignore();
+  cin.ignore();
+  do {
+    cin.clear(); // Clear the input
     getline(cin, userInput);
     for (int i = 0; i < userInput.length(); i++) { // Loop through name
+      // int digit = userInput[i];
       if(!isdigit(userInput[i])) {
         stringErrorCounter++; // update the counter
       }
@@ -231,15 +265,24 @@ bool validateUserAnswer(string operation, int num1, int num2, double &totalCredi
 
     if (stringErrorCounter > 0) { // if the counter has value other than zero or cin input stream breaks.
       cout << "Invalid entry. Try again! \n";
-      cin.clear(); // Clear the input
       stringErrorCounter = 0; // Reset the counter
     } else {
       userInputValid = true;
     }
-  }
+  } while (!userInputValid);
 
   if(operation == "Addition") {
     if ((num1 + num2) == stoi(userInput)) {
+      clearScreen();
+      updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl;
+    } else {
+      clearScreen();
+      updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl;
+    }
+  } else if (operation == "Subtraction") {
+    if ((num1 - num2) == stoi(userInput)) {
       clearScreen();
       updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
       cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl;
