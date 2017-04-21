@@ -10,26 +10,37 @@
 #include <string>
 #include <fstream>
 #include <cctype>
+#include <ctime>
+#include <cstdlib>
 using namespace std;
 
 // void validateUserResponse(int);
-void credits(char &, string &, bool &);
+void credits(char &, string &, bool &, double &, int &, int &);
 void clearScreen();
-void retrieveStats(string &);
-void menu (string, bool &);
+void retrieveStats(string &, double &, int &, int &);
+void menu (string, double &, int &, int &, bool &);
+bool validateUserResponse(char, string, double &, int &, int &);
+bool generateAddition(string, double &, int &, int &);
+bool validateUserAnswer(string, int, int, double &, int &, int &);
+void updateStats(double, int, int, double &, int &, int &);
+void saveStats (string, double, int, int);
 
 int main() {
+  srand(time(NULL));
   char userResponse;
   string userName;
+  double totalCredit = 0.0;
+  int totalCorrect = 0, totalIncorrect = 0;
   bool quizEnd = false;
-  credits(userResponse, userName, quizEnd);
+
+  credits(userResponse, userName, quizEnd, totalCredit, totalCorrect, totalIncorrect);
   while(!quizEnd) {
-    menu(userName, quizEnd);
+    menu(userName, totalCredit, totalCorrect, totalIncorrect, quizEnd);
   }
   return 0;
 }
 
-void credits(char &userResponse, string &userName, bool &quizEnd) {
+void credits(char &userResponse, string &userName, bool &quizEnd, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
   // Creating the menu box
   cout << string(24, '*') << endl;
   cout << string(24, '*') << endl;
@@ -48,7 +59,7 @@ void credits(char &userResponse, string &userName, bool &quizEnd) {
   cin >> userResponse;
   if (toupper(userResponse) == 'Y') { // Convert user response to upper case.
     clearScreen();
-    retrieveStats(userName);
+    retrieveStats(userName, totalCredit, totalCorrect, totalIncorrect);
   } else {
     quizEnd = true;
   }
@@ -60,10 +71,10 @@ void clearScreen () {
   }
 }
 
-void retrieveStats(string &userName) {
+void retrieveStats(string &userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
   bool validName = false;
-  int stringErrorCounter = 0;
-  string userFileName;
+  int stringErrorCounter = 0, fileWordCounter = 0;
+  string userFileName, readFile;
   ofstream newUserFile;
 
   cin.ignore();
@@ -73,7 +84,6 @@ void retrieveStats(string &userName) {
     for (int i = 0; i < userName.length(); i++) { // Loop through name
       if(!isalpha(userName[i]) || isblank(userName[i])) {
         stringErrorCounter++; // update the counter
-        cout << stringErrorCounter << endl;
       }
     }
 
@@ -82,6 +92,7 @@ void retrieveStats(string &userName) {
       cin.clear(); // Clear the input
       stringErrorCounter = 0; // Reset the counter
     } else {
+
       validName = true;
     }
   }
@@ -89,18 +100,41 @@ void retrieveStats(string &userName) {
   userFileName = userName + ".txt";
   ifstream userFile(userFileName);
 
-  if (!userFile) {
+  // userFile.ignore(numeric_limits<streamsize>::max(), '\n');
+  // userFile.open(userFileName);
+  int i = 1;
+  if (userFile.is_open()) {
+    // while (userFile >> readFile) {
+    //   cout << readFile << endl;
+    //   userFile.ignore(numeric_limits<streamsize>::max(), '\n');
+    // }
+    // fileWordCounter = 0;
+    while (getline(userFile, readFile)) {
+      if (i == 1) {
+        userName = readFile;
+      } else if (i == 2) {
+        totalCredit = stod(readFile);
+      } else if (i == 3) {
+        totalCorrect = stoi(readFile);
+      } else if (i == 4) {
+        totalIncorrect = stoi(readFile);
+      }
+      i++;
+    }
+    userFile.ignore(numeric_limits<streamsize>::max(), '\n');
+    userFile.close();
+  } else {
     newUserFile.open(userFileName);
-    newUserFile << userName << endl << 0 << endl << 0 << endl << 0 << endl;
+    newUserFile << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
     newUserFile.close();
   }
 }
 
-void menu (string userName, bool &quizEnd) {
+void menu (string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect, bool &quizEnd) {
   char userInput;
   bool closeMenu = false;
-
   do {
+    // cout << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
     cout << string(4, '*') << " CHOOSE A PROBLEM " << string(3, '*') << endl;
     cout << string(25, '*') << endl;
     cout << string(25, '*') << endl;
@@ -116,41 +150,125 @@ void menu (string userName, bool &quizEnd) {
     cout << string(25, '*') << endl;
     cin >> userInput;
 
-    switch (toupper(userInput)) { // Use switch to check the input for know cases
-      case '1':
-        cout << userInput << endl; // Generate the problems here instead.
-        cin.clear();
-        clearScreen();
-        break;
-      case '2':
-        cout << userInput << endl; // Generate the problems here instead.
-        cin.clear();
-        clearScreen();
-        break;
-      case '3':
-        cout << userInput << endl; // Generate the problems here instead.
-        cin.clear();
-        clearScreen();
-        break;
-      case '4':
-        cout << userInput << endl; // Generate the problems here instead.
-        cin.clear();
-        clearScreen();
-        break;
-      case '5':
-        cout << userInput << endl; // Generate the problems here instead.
-        cin.clear();
-        clearScreen();
-        break;
-      case 'N':
-        closeMenu = true;
-        clearScreen();
-        break;
-      default:
-        cout << "This is not a valid menu option \n";
-        cin.clear();
-        break;
-    }
+    closeMenu = validateUserResponse(userInput, userName, totalCredit, totalCorrect, totalIncorrect);
   } while(!closeMenu);
   quizEnd = true;
+}
+
+bool validateUserResponse(char response, string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  if (response == '1') {
+    cin.clear();
+    clearScreen();
+    return generateAddition(userName, totalCredit, totalCorrect, totalIncorrect);
+  } else if (response == '2') {
+    cout << response << endl; // Generate the problems here instead.
+    cin.clear();
+    clearScreen();
+  } else if (response == '3') {
+    cout << response << endl; // Generate the problems here instead.
+    cin.clear();
+    clearScreen();
+  } else if (response == '4') {
+    cout << response << endl; // Generate the problems here instead.
+    cin.clear();
+    clearScreen();
+  } else if (response == '5') {
+    cout << response << endl; // Generate the problems here instead.
+    cin.clear();
+    clearScreen();
+  } else if (toupper(response) == 'N') {
+    clearScreen();
+    saveStats (userName, totalCredit, totalCorrect, totalIncorrect);
+    return true;
+  } else {
+    cout << "This is not a valid menu option \n";
+    cin.clear();
+  }
+
+  return false;
+}
+
+bool generateAddition(string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  int num1, num2;
+  string fileName;
+  bool userAnswerInt = false;
+  fileName = userName + ".txt";
+
+  num1 = rand() % 9 + 1;
+  num2 = rand() % 9 + 1;
+
+  cout << string(6, '*') << "  ADDITION   " << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << "   " << num1 << " + " << num2 << " = ? " << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+
+  while (!userAnswerInt) {
+    userAnswerInt = validateUserAnswer("Addition", num1, num2, totalCredit, totalCorrect, totalIncorrect);
+  }
+
+  return false;
+}
+
+bool validateUserAnswer(string operation, int num1, int num2, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  string userInput;
+  int stringErrorCounter = 0;
+  bool userInputValid = false;
+
+  while (!userInputValid) {
+    cin.ignore();
+    getline(cin, userInput);
+    for (int i = 0; i < userInput.length(); i++) { // Loop through name
+      if(!isdigit(userInput[i])) {
+        stringErrorCounter++; // update the counter
+      }
+    }
+
+    if (stringErrorCounter > 0) { // if the counter has value other than zero or cin input stream breaks.
+      cout << "Invalid entry. Try again! \n";
+      cin.clear(); // Clear the input
+      stringErrorCounter = 0; // Reset the counter
+    } else {
+      userInputValid = true;
+    }
+  }
+
+  if(operation == "Addition") {
+    if ((num1 + num2) == stoi(userInput)) {
+      clearScreen();
+      updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl;
+    } else {
+      clearScreen();
+      updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl;
+    }
+  }
+
+  return true;
+}
+
+void updateStats(double addCredit, int addCorrect, int addIncorrect, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  if (addCredit == 0.05 && addCorrect && !addIncorrect) {
+    totalCredit += addCredit;
+    totalCorrect += addCorrect;
+  } else if (totalCredit > 0 && addCredit == 0.03 && !addCorrect && addIncorrect) {
+    totalCredit -= addCredit;
+    totalIncorrect += addIncorrect;
+  } else if (totalCredit == 0 && addCredit == 0.03 && !addCorrect && addIncorrect) {
+    totalIncorrect += addIncorrect;
+  }
+}
+
+void saveStats (string userName, double totalCredit, int totalCorrect, int totalIncorrect) {
+  string fileName = userName + ".txt";
+  ofstream userFile;
+  userFile.open(fileName);
+  userFile << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
+  userFile.close();
 }
