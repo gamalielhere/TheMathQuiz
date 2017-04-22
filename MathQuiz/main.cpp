@@ -7,14 +7,16 @@
 //
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <fstream>
 #include <cctype>
 #include <ctime>
 #include <cstdlib>
+#include <sstream>
 using namespace std;
 
-// void validateUserResponse(int);
+// Declare functions
 void credits(char &, string &, bool &, double &, int &, int &);
 void clearScreen();
 void retrieveStats(string &, double &, int &, int &);
@@ -22,12 +24,16 @@ void menu (string, double &, int &, int &, bool &);
 bool validateUserResponse(char, string, double &, int &, int &);
 bool generateAddition(string, double &, int &, int &);
 bool generateSubtraction(string, double &, int &, int &);
+bool generateMultiplication(string, double &, int &, int &);
+bool generateDivision(string, double &, int &, int &);
 bool validateUserAnswer(string, int, int, double &, int &, int &);
 void updateStats(double, int, int, double &, int &, int &);
 void saveStats (string, double, int, int);
+bool displayStats(string, double, int, int);
 
 int main() {
-  srand(time(NULL));
+  // Declare variables
+  srand(time_t(NULL));
   char userResponse;
   string userName;
   double totalCredit = 0.0;
@@ -42,7 +48,7 @@ int main() {
 }
 
 void credits(char &userResponse, string &userName, bool &quizEnd, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
-  // Creating the menu box
+  // Creating author credit screen
   cout << string(24, '*') << endl;
   cout << string(24, '*') << endl;
   cout << string(24, '*') << endl;
@@ -66,6 +72,7 @@ void credits(char &userResponse, string &userName, bool &quizEnd, double &totalC
   }
 }
 
+// function to clear screen
 void clearScreen () {
   for (int i = 0; i < 10; i++) {
     cout << "\n\n\n\n\n\n\n\n\n\n";
@@ -74,7 +81,7 @@ void clearScreen () {
 
 void retrieveStats(string &userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
   bool validName = false;
-  int stringErrorCounter = 0, fileWordCounter = 0;
+  int stringErrorCounter = 0;
   string userFileName, readFile;
   ofstream newUserFile;
 
@@ -93,7 +100,7 @@ void retrieveStats(string &userName, double &totalCredit, int &totalCorrect, int
       cin.clear(); // Clear the input
       stringErrorCounter = 0; // Reset the counter
     } else {
-
+      clearScreen();
       validName = true;
     }
   }
@@ -122,6 +129,7 @@ void retrieveStats(string &userName, double &totalCredit, int &totalCorrect, int
     userFile.ignore(numeric_limits<streamsize>::max(), '\n');
     userFile.close();
   } else {
+    // Create new file
     newUserFile.open(userFileName);
     newUserFile << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
     newUserFile.close();
@@ -132,7 +140,7 @@ void menu (string userName, double &totalCredit, int &totalCorrect, int &totalIn
   char userInput;
   bool closeMenu = false;
   do {
-    // cout << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
+    // Output menu
     cout << string(4, '*') << " CHOOSE A PROBLEM " << string(3, '*') << endl;
     cout << string(25, '*') << endl;
     cout << string(25, '*') << endl;
@@ -163,17 +171,17 @@ bool validateUserResponse(char response, string userName, double &totalCredit, i
     clearScreen();
     return generateSubtraction(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (response == '3') {
-    cout << response << endl; // Generate the problems here instead.
     cin.clear();
     clearScreen();
+    return generateMultiplication(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (response == '4') {
-    cout << response << endl; // Generate the problems here instead.
     cin.clear();
     clearScreen();
+    return generateDivision(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (response == '5') {
-    cout << response << endl; // Generate the problems here instead.
     cin.clear();
     clearScreen();
+    return displayStats(userName, totalCredit, totalCorrect, totalIncorrect);
   } else if (toupper(response) == 'N') {
     clearScreen();
     saveStats (userName, totalCredit, totalCorrect, totalIncorrect);
@@ -192,9 +200,10 @@ bool generateAddition(string userName, double &totalCredit, int &totalCorrect, i
   bool userAnswerInt = false;
   fileName = userName + ".txt";
 
-  num1 = rand() % 9 + 1;
-  num2 = rand() % 9 + 1;
+  num1 = rand() % 9 + 1; // Generate random number
+  num2 = rand() % 9 + 1; // Generate random number
 
+  // Output math probeml
   cout << string(6, '*') << "  ADDITION   " << string(6, '*') << endl;
   cout << string(25, '*') << endl;
   cout << string(25, '*') << endl;
@@ -219,9 +228,9 @@ bool generateSubtraction(string userName, double &totalCredit, int &totalCorrect
   bool userAnswerInt = false;
   fileName = userName + ".txt";
 
-  minuend = rand() % 9 + 1;
-  subtrahend = rand() % 9 + 1;
-  if (minuend > subtrahend || minuend == subtrahend) {
+  minuend = rand() % 9 + 1; // Generate random number
+  subtrahend = rand() % 9 + 1; // Generate random number
+  if (minuend > subtrahend || minuend == subtrahend) { // check and assign correctly so results wont end up negative
     num1 = minuend;
     num2 = subtrahend;
   } else {
@@ -229,6 +238,7 @@ bool generateSubtraction(string userName, double &totalCredit, int &totalCorrect
     num1 = subtrahend;
   }
 
+  // Output math probeml
   cout << string(6, '*') << " SUBTRACTION " << string(6, '*') << endl;
   cout << string(25, '*') << endl;
   cout << string(25, '*') << endl;
@@ -242,6 +252,73 @@ bool generateSubtraction(string userName, double &totalCredit, int &totalCorrect
 
   while (!userAnswerInt) {
     userAnswerInt = validateUserAnswer("Subtraction", num1, num2, totalCredit, totalCorrect, totalIncorrect);
+  }
+
+  return false;
+}
+
+bool generateMultiplication(string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  int num1, num2;
+  string fileName;
+  bool userAnswerInt = false;
+  fileName = userName + ".txt";
+
+  num1 = rand() % 9 + 1; // Generate random number
+  num2 = rand() % 9 + 1; // Generate random number
+
+  // Output math probeml
+  cout << string(4, '*') << " MULTIPLICATION  " << string(4, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << "   " << num1 << " * " << num2 << " = ? " << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+
+  while (!userAnswerInt) {
+    userAnswerInt = validateUserAnswer("Multiplication", num1, num2, totalCredit, totalCorrect, totalIncorrect);
+  }
+
+  return false;
+}
+
+bool generateDivision(string userName, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
+  int num1, num2, divisor, dividend;
+  string fileName;
+  bool userAnswerInt = false;
+  fileName = userName + ".txt";
+
+  divisor = rand() % 9 + 1; // Generate random number
+  dividend = rand() % 9 + 1; // Generate random number
+  num1 = divisor * dividend; // Multiply both random number so one of them will be the answer.
+
+  if (divisor > dividend) {
+    num2 = divisor; // use the largest number as divisor
+  } else {
+    num2 = dividend; // use the largest number as divisor
+  }
+
+  // Output math probeml
+  cout << string(7, '*') << " DIVISION  " << string(7, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  if (num1 > 10) { // too long to use setw here.
+    cout << string(6, '*') << "  " << num1 << " / " << num2 << " = ? " << string(6, '*') << endl;
+  } else {
+    cout << string(6, '*') << "   " << num1 << " / " << num2 << " = ? " << string(6, '*') << endl;
+  }
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(6, '*') << string(13, ' ') << string(6, '*') << endl;
+  cout << string(25, '*') << endl;
+  cout << string(25, '*') << endl;
+
+  while (!userAnswerInt) {
+    userAnswerInt = validateUserAnswer("Division", num1, num2, totalCredit, totalCorrect, totalIncorrect);
   }
 
   return false;
@@ -275,21 +352,41 @@ bool validateUserAnswer(string operation, int num1, int num2, double &totalCredi
     if ((num1 + num2) == stoi(userInput)) {
       clearScreen();
       updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
-      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl;
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl; // prompt user
     } else {
       clearScreen();
       updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
-      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl;
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl; // prompt user
     }
   } else if (operation == "Subtraction") {
     if ((num1 - num2) == stoi(userInput)) {
       clearScreen();
       updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
-      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl;
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl; // prompt user
     } else {
       clearScreen();
       updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
-      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl;
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl; // prompt user
+    }
+  } else if(operation == "Multiplication") {
+    if ((num1 * num2) == stoi(userInput)) {
+      clearScreen();
+      updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl; // prompt user
+    } else {
+      clearScreen();
+      updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl; // prompt user
+    }
+  } else if(operation == "Division") {
+    if ((num1 / num2) == stoi(userInput)) {
+      clearScreen();
+      updateStats(0.05, 1, 0, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    RIGHT    " << string(6, '*') << endl; // prompt user
+    } else {
+      clearScreen();
+      updateStats(0.03, 0, 1, totalCredit, totalCorrect, totalIncorrect);
+      cout << string(6, '*') << "    WRONG    " << string(6, '*') << endl; // prompt user
     }
   }
 
@@ -297,13 +394,13 @@ bool validateUserAnswer(string operation, int num1, int num2, double &totalCredi
 }
 
 void updateStats(double addCredit, int addCorrect, int addIncorrect, double &totalCredit, int &totalCorrect, int &totalIncorrect) {
-  if (addCredit == 0.05 && addCorrect && !addIncorrect) {
-    totalCredit += addCredit;
-    totalCorrect += addCorrect;
-  } else if (totalCredit > 0 && addCredit == 0.03 && !addCorrect && addIncorrect) {
-    totalCredit -= addCredit;
+  if (addCredit == 0.05 && addCorrect && !addIncorrect) { // Check what values are getting passed and use that to decide on whether to add or deduct
+    totalCredit += addCredit; // add to the total
+    totalCorrect += addCorrect; // add to the total
+  } else if (totalCredit > 0 && addCredit == 0.03 && !addCorrect && addIncorrect) { // Check what values are getting passed and use that to decide on whether to add or deduct
+    totalCredit -= addCredit; // Deduct from total
     totalIncorrect += addIncorrect;
-  } else if (totalCredit == 0 && addCredit == 0.03 && !addCorrect && addIncorrect) {
+  } else if (totalCredit == 0 && addCredit == 0.03 && !addCorrect && addIncorrect) { // Check what values are getting passed and use that to decide on whether to add or deduct
     totalIncorrect += addIncorrect;
   }
 }
@@ -311,7 +408,27 @@ void updateStats(double addCredit, int addCorrect, int addIncorrect, double &tot
 void saveStats (string userName, double totalCredit, int totalCorrect, int totalIncorrect) {
   string fileName = userName + ".txt";
   ofstream userFile;
-  userFile.open(fileName);
-  userFile << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl;
-  userFile.close();
+  // Not sure why it's not appending instead of what it's current behaviour which is updating the file correctly.
+  userFile.open(fileName); // open file
+  userFile << userName << endl << totalCredit << endl << totalCorrect << endl << totalIncorrect << endl; // update file
+  userFile.close(); // close file
+}
+
+bool displayStats(string userName, double totalCredit, int totalCorrect, int totalIncorrect) {
+  stringstream stream;
+  stream << fixed << setprecision(2) << totalCredit;
+  cout << string(12, '*') << " STATS " << string(12, '*')  << endl;
+  cout << string(31, '*') << endl;
+  cout << "***" << setw(25) << setfill(' ') << left << " Name: " + userName << "***" << endl;
+  cout << "***" << setw(25) << setfill(' ') << left << " Total Earnings: " + stream.str() << "***" << endl;
+  cout << "***" << setw(25) << setfill(' ') << left << " Total Correct: " + to_string(totalCorrect) << "***" << endl;
+  cout << "***" << setw(25) << setfill(' ') << left << " Total Incorrect: " + to_string(totalIncorrect) << "***" << endl;
+  cout << string(31, '*') << endl;
+  cout << string(31, '*') << endl;
+
+  cout << "Press Enter to continue . . . \n";
+  cin.ignore();
+  getchar();
+  clearScreen();
+  return false;
 }
